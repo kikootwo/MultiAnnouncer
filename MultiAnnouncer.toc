@@ -1,7 +1,7 @@
 ## Interface: 90205
 ## Title: MultiAnnouncer
 ## Author: Spyer-Benediction
-## Version: 1.0.0
+## Version: 1.0.1
 ## SavedVariables: MultiAnnouncerDB
 
 # Ace3 Libraries
