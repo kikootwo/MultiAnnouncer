@@ -4,9 +4,14 @@ on:
   workflow_dispatch:
     inputs:
       versionType:
-        description: 'Version Bump Type (major, minor, patch)'
+        description: 'Select the version bump type'
         required: true
         default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
 
 jobs:
   release:
