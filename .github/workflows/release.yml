@@ -45,7 +45,7 @@ jobs:
       - name: Zip Addon Files
         run: |
           mkdir -p package/MultiAnnouncer
-          cp -r * package/MultiAnnouncer/
+          cp -r .github libs Main.lua MultiAnnouncer.toc package/MultiAnnouncer/
           cd package
           zip -r ../MultiAnnouncer-${{ steps.get_version.outputs.VERSION }}.zip MultiAnnouncer/ -x "*.git*" -x "*__pycache__*" -x "*.github*"
           cd ..
