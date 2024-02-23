@@ -2,7 +2,7 @@
 import re
 import sys
 
-def bump_version(version_type, toc_file_path='MultiAnnouncer/MultiAnnouncer.toc'):
+def bump_version(version_type, toc_file_path='MultiAnnouncer.toc'):
     # Read the .toc file
     with open(toc_file_path, 'r') as file:
         content = file.read()
@@ -15,17 +15,20 @@ def bump_version(version_type, toc_file_path='MultiAnnouncer/MultiAnnouncer.toc'
     major, minor, patch = map(int, version_line.groups())
     if version_type == 'major':
         major += 1
-        minor = 0
-        patch = 0
     elif version_type == 'minor':
         minor += 1
-        patch = 0
     elif version_type == 'patch':
         patch += 1
     else:
         raise ValueError("Unknown version type specified.")
 
-    # Replace the version line with the new version
+    # Ensure minor and patch reset on major and minor bumps
+    if version_type == 'major':
+        minor = 0
+        patch = 0
+    elif version_type == 'minor':
+        patch = 0
+
     new_version = f"## Version: {major}.{minor}.{patch}"
     new_content = re.sub(r'^## Version: \d+\.\d+\.\d+$', new_version, content, flags=re.M)
 
