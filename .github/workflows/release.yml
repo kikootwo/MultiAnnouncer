@@ -1,0 +1,56 @@
+name: Release MultiAnnouncer
+
+on:
+  workflow_dispatch:
+    inputs:
+      versionType:
+        description: 'Version Bump Type (major, minor, patch)'
+        required: true
+        default: 'patch'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Bump Version in TOC file
+        run: python .github/scripts/bump_version.py ${{ github.event.inputs.versionType }}
+        env:
+          VERSION_TYPE: ${{ github.event.inputs.versionType }}
+
+      - name: Get the new version number
+        id: get_version
+        run: echo "::set-output name=VERSION::$(grep '^## Version:' MultiAnnouncer/MultiAnnouncer.toc | cut -d ' ' -f3)"
+
+      - name: Zip Addon Files
+        run: |
+          zip -r MultiAnnouncer-${{ steps.get_version.outputs.VERSION }}.zip MultiAnnouncer/ -x "*.git*" -x "*/.github/*" -x "*/__pycache__/*"
+      
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.get_version.outputs.VERSION }}
+          release_name: Release v${{ steps.get_version.outputs.VERSION }}
+          body: "New release of MultiAnnouncer."
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./MultiAnnouncer-${{ steps.get_version.outputs.VERSION }}.zip
+          asset_name: MultiAnnouncer-${{ steps.get_version.outputs.VERSION }}.zip
+          asset_content_type: application/zip
