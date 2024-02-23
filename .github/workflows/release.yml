@@ -27,14 +27,29 @@ jobs:
 
       - name: Bump Version in TOC file
         run: python .github/scripts/bump_version.py ${{ github.event.inputs.versionType }}
+        env:
+          VERSION_TYPE: ${{ github.event.inputs.versionType }}
 
       - name: Get the new version number
         id: get_version
         run: echo "::set-output name=VERSION::$(grep '^## Version:' MultiAnnouncer.toc | cut -d ' ' -f3)"
 
+      - name: Commit updated TOC file
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add MultiAnnouncer.toc
+          git commit -m "Bump version to ${{ steps.get_version.outputs.VERSION }}" || echo "No changes to commit"
+          git push
+
       - name: Zip Addon Files
         run: |
-          zip -r MultiAnnouncer-${{ steps.get_version.outputs.VERSION }}.zip . -x "*.git*" -x ".github/**/*" -x "__pycache__/**/*"
+          mkdir -p package/MultiAnnouncer
+          cp -r * package/MultiAnnouncer/
+          cd package
+          zip -r ../MultiAnnouncer-${{ steps.get_version.outputs.VERSION }}.zip MultiAnnouncer/ -x "*.git*" -x "*__pycache__*" -x "*.github*"
+          cd ..
+          rm -rf package
 
       - name: Create Release
         id: create_release
