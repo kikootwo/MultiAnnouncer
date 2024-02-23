@@ -13,21 +13,19 @@ def bump_version(version_type, toc_file_path='MultiAnnouncer.toc'):
         raise ValueError("Version line not found in TOC file.")
 
     major, minor, patch = map(int, version_line.groups())
-    if version_type == 'major':
-        major += 1
-    elif version_type == 'minor':
+
+    # Treat 'auto' as a 'minor' bump
+    if version_type == 'auto' or version_type == 'minor':
         minor += 1
+        patch = 0  # Reset patch version on minor bump
+    elif version_type == 'major':
+        major += 1
+        minor = 0  # Reset minor version on major bump
+        patch = 0  # Reset patch version on major bump
     elif version_type == 'patch':
         patch += 1
     else:
         raise ValueError("Unknown version type specified.")
-
-    # Ensure minor and patch reset on major and minor bumps
-    if version_type == 'major':
-        minor = 0
-        patch = 0
-    elif version_type == 'minor':
-        patch = 0
 
     new_version = f"## Version: {major}.{minor}.{patch}"
     new_content = re.sub(r'^## Version: \d+\.\d+\.\d+$', new_version, content, flags=re.M)
