@@ -54,9 +54,54 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git add MultiAnnouncer.toc
+          git add MultiAnnouncer.toc release.json
           git commit -m "Bump version to ${{ steps.get_version.outputs.VERSION }}" || echo "No changes to commit"
           git push
+
+      - name: Generate CHANGELOG.md
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0)
+          echo "## Changelog since $LAST_TAG" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          git log ${LAST_TAG}..HEAD --pretty=format:"- %s" --reverse >> CHANGELOG.md
+
+      - name: Generate release.json
+        run: |
+          VERSION=$(grep '^## Version:' MultiAnnouncer.toc | cut -d ' ' -f3)
+          MAINLINE=$(jq -r '.versions.mainline' .github/versions.json)
+          WRATH=$(jq -r '.versions.wrath' .github/versions.json)
+          CLASSIC=$(jq -r '.versions.classic' .github/versions.json)
+          cat > release.json << EOF
+          {
+            "releases": [
+              {
+                "name": "MultiAnnouncer",
+                "version": "$VERSION",
+                "filename": "MultiAnnouncer-$VERSION.zip",
+                "nolib": false,
+                "metadata": [
+                  {
+                    "flavor": "mainline",
+                    "interface": $MAINLINE
+                  },
+                  {
+                    "flavor": "wrath",
+                    "interface": $WRATH
+                  },
+                  {
+                    "flavor": "classic",
+                    "interface": $CLASSIC
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+        shell: bash
+
+      - name: Generate version-specific TOC files
+        run: python .github/scripts/generate_toc_versions.py
+
 
       - name: Zip Addon Files
         run: |
