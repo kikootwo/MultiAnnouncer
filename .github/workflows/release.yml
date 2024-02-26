@@ -28,10 +28,17 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: 'main'
+          fetch-depth: 0  # Fetches all history for all tags and branches
 
       - name: Fetch all tags
-        run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-
+        run: git fetch --prune --unshallow --tags
+        
+      - name: List tags and current commit
+        run: |
+          git tag
+          echo "Current commit:"
+          git rev-parse HEAD
+      
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
