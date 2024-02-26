@@ -118,7 +118,7 @@ jobs:
           mkdir -p package/MultiAnnouncer
           rsync -av --exclude='package/' ./* package/MultiAnnouncer/
           cd package
-          zip -r ../MultiAnnouncer-${{ steps.get_version.outputs.VERSION }}.zip MultiAnnouncer/ -x "*.git*" -x "*__pycache__*" -x "*.github*"
+          zip -r ../MultiAnnouncer-${{ steps.get_version.outputs.VERSION }}.zip MultiAnnouncer/ -x "*.git*" -x "*__pycache__*" -x "*.github*" -x "release.json"
           cd ..
           rm -rf package
 
@@ -143,3 +143,14 @@ jobs:
           asset_path: ./MultiAnnouncer-${{ steps.get_version.outputs.VERSION }}.zip
           asset_name: MultiAnnouncer-${{ steps.get_version.outputs.VERSION }}.zip
           asset_content_type: application/zip
+      
+      - name: Upload release.json as a Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release.json
+          asset_name: release.json
+          asset_content_type: application/json
+
