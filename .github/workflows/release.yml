@@ -31,7 +31,7 @@ jobs:
           fetch-depth: 0  # Fetches all history for all tags and branches
 
       - name: Fetch all tags
-        run: git fetch --prune --unshallow --tags
+        run: git fetch --prune --tags
         
       - name: List tags and current commit
         run: |
