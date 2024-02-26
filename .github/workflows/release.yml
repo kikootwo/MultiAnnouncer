@@ -1,4 +1,4 @@
-name: Release MultiAnnouncer
+name: Release MultiAnnouncer Manually
 
 on:
   pull_request:
