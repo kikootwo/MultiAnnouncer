@@ -1,0 +1,68 @@
+name: Release MultiAnnouncer
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      versionType:
+        description: 'Select the version bump type for manual trigger'
+        required: false
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: >
+      github.event.pull_request.merged == true ||
+      github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: 'main'
+      
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Bump Version in TOC file (for manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        run: python .github/scripts/bump_version.py ${{ github.event.inputs.versionType }}
+        env:
+          VERSION_TYPE: ${{ github.event.inputs.versionType }}
+
+      - name: Bump Version in TOC file (for PR merge)
+        if: github.event.pull_request.merged == true
+        run: python .github/scripts/bump_version.py auto
+        env:
+          VERSION_TYPE: auto
+
+      - name: Get the new version number
+        id: get_version
+        run: echo "::set-output name=VERSION::$(grep '^## Version:' MultiAnnouncer.toc | cut -d ' ' -f3)"
+
+      - name: Commit updated TOC file
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add MultiAnnouncer.toc
+          git commit -m "Bump version to ${{ steps.get_version.outputs.VERSION }}" || echo "No changes to commit"
+          git push
+
+      - name: Create and deploy packages
+        uses: BigWigsMods/packager@v2
+        with:
+          args: -S
+        env:
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+

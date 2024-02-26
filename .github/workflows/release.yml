@@ -81,32 +81,7 @@ jobs:
           MAINLINE=$(jq -r '.versions.mainline' .github/versions.json)
           WRATH=$(jq -r '.versions.wrath' .github/versions.json)
           CLASSIC=$(jq -r '.versions.classic' .github/versions.json)
-          cat > release.json << EOF
-          {
-            "releases": [
-              {
-                "name": "MultiAnnouncer",
-                "version": "$VERSION",
-                "filename": "MultiAnnouncer-$VERSION.zip",
-                "nolib": false,
-                "metadata": [
-                  {
-                    "flavor": "mainline",
-                    "interface": $MAINLINE
-                  },
-                  {
-                    "flavor": "wrath",
-                    "interface": $WRATH
-                  },
-                  {
-                    "flavor": "classic",
-                    "interface": $CLASSIC
-                  }
-                ]
-              }
-            ]
-          }
-          EOF
+          echo "{\"releases\":[{\"name\":\"MultiAnnouncer\",\"version\":\"$VERSION\",\"filename\":\"MultiAnnouncer-$VERSION.zip\",\"nolib\":false,\"metadata\":[{\"flavor\":\"mainline\",\"interface\":$MAINLINE},{\"flavor\":\"wrath\",\"interface\":$WRATH},{\"flavor\":\"classic\",\"interface\":$CLASSIC}]}]}" > release.json
         shell: bash
 
       - name: Generate version-specific TOC files
