@@ -29,6 +29,9 @@ jobs:
         with:
           ref: 'main'
 
+      - name: Fetch all tags
+        run: git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
